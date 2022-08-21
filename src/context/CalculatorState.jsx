@@ -19,50 +19,49 @@ export const CalculatorState = ({ children }) => {
   const [memory, setMemory] = useState(0)
   const [operation, setOperation] = useState(null)
   const [currentValue, setCurrentValue] = useState(0)
-  const [isReset, setIsReset] = useState(true)
   const [isDecimal, setIsDecimal] = useState(false)
 
   const addNumber = (value) => {
-    if (isReset) {
-      if (value == '.') {
-        setIsDecimal(true)
-      } else {
-        const point = isDecimal ? '.' : ''
-        const newValue = currentValue.toString() + point + value.toString()
-        setCurrentValue(parseFloat(newValue));
-        setIsReset(false);
-        setIsDecimal(false)
-      }
-    } else {
-      if (value == '.') {
-        setIsDecimal(true)
-      } else {
-        const point = isDecimal ? '.' : ''
-        const newValue = currentValue.toString() + point + value.toString()
-        setCurrentValue(parseFloat(newValue))
-        setIsReset(false)
-        setIsDecimal(false)
-      }
+    let newValue = currentValue
+
+    console.log(currentValue)
+
+    if ((value == '.') && (!isDecimal)) {
+      setIsDecimal(true)
+      const point = isDecimal ? '.' : ''
+      newValue = currentValue.toString() + point + value.toString()
     }
+
+    if ((value !== '.') && (isDecimal)) {
+      setIsDecimal(false)
+      newValue = currentValue.toString() + '.' + value.toString()
+    }
+
+    if ((value !== '.') && (!isDecimal))
+      newValue = currentValue.toString() + value.toString()
+
+    setCurrentValue(parseFloat(newValue));
   }
 
   const addOperation = (op) => {
-    if (currentValue) {
-      if (operation) {
-        getResult()
-        setOperation(op)
-      } else {
-        setOperation(op)
-        setMemory(currentValue)
-        setCurrentValue(0)
-        setIsReset(true)
-      }
+
+    if (operation !== null) {
+      getResult()
+      setOperation(null)
     }
+
+    if (operation == null) {
+      setOperation(op)
+      if (memory == 0)
+        setMemory(currentValue)
+    }
+
+    setCurrentValue(0)
   }
 
   const getResult = () => {
     let result = 0
-    if (currentValue && operation && memory) {
+    if (currentValue && operation) {
       switch (operation) {
         case "+":
           result = parseFloat(currentValue) + parseFloat(memory)
@@ -81,10 +80,9 @@ export const CalculatorState = ({ children }) => {
           break
         default:
       }
-      setCurrentValue(result)
+      setCurrentValue(0)
       setOperation(null);
       setMemory(result);
-      setIsReset(true);
       setIsDecimal(false)
     }
   }
@@ -93,18 +91,25 @@ export const CalculatorState = ({ children }) => {
     setCurrentValue(0);
     setOperation(null);
     setMemory(0)
-    setIsReset(true)
     setIsDecimal(false)
   }
 
-  const deleteNumber = () => {
-    const index = currentValue.toString().indexOf('.')
-    if (index > 0) {
-      const newValue = currentValue.toString().slice(0, currentValue.toString().length - 1)
-      setCurrentValue(parseFloat(newValue))
-    } else {
-      setCurrentValue(parseInt(currentValue / 10))
-    }
+  const setDelete = () => {
+
+    if (currentValue.toString().length > 1)
+      setCurrentValue(parseFloat(currentValue.toString().slice(0, currentValue.toString().length - 1)))
+
+    if (currentValue.toString().length == 1)
+      setCurrentValue(0)
+
+    if ((operation !== null) && (currentValue == 0))
+      setOperation(null)
+
+    if ((currentValue == 0) && (operation == null) && (memory.toString().length > 0))
+      setMemory(parseFloat(memory.toString().slice(0, memory.toString().length - 1)))
+
+    if ((currentValue == 0) && (operation == null) && (memory.toString().length == 1))
+      setMemory(0)
   }
 
   const changeSig = () => {
@@ -128,7 +133,7 @@ export const CalculatorState = ({ children }) => {
         cleanUp()
         break
       case "<==":
-        deleteNumber()
+        setDelete()
         break
       case "+/-":
         changeSig()

@@ -5,20 +5,17 @@ const Button = ({ type, value }) => {
   const { addNumber, addOperation, executeAction } = useCalculator()
 
   const handleClick = () => {
-    switch (type) {
-      case 'number':
-        addNumber(parseInt(value))
-        break
-      case 'operation':
-        addOperation(value)
-        break
-      case 'action':
-        executeAction(value)
-        break
-      default:
-        break
-    }
+
+    if (type == 'number')
+      addNumber(value)
+
+    if (type == 'operation')
+      addOperation(value)
+
+    if (type == 'action')
+      executeAction(value)
   }
+
 
   return (
     <button
